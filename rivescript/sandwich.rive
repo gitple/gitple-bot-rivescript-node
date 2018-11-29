@@ -1,0 +1,315 @@
+! version = 2.00
+! local concat = none
+! array menulist = 오늘의 샌드위치|닭가슴살 & 고구마|선식
+! array sourcelist = 발사믹|오리엔탈|머스타드|사우전|요거트
+! array drinklist = 두유|옥수수수염차|드링킹요거트|자몽주스|포도주스|알로에|매실|우유|트레비|콜라|아메리카노
+
+// showList listvar
+> object showList javascript
+//rs, args, cb
+  const LISTS = {
+    menulist: {
+      title: '샌드위치의 종류를 선택해 주세요',
+      options: [[{
+        p: 'image',
+        u: 'https://s3.ap-northeast-2.amazonaws.com/www.gitple.io/bot/sandwitch/1.jpg',
+        t: '오늘의 샌드위치',
+      }, {
+        p: 'text',
+        t: '오늘의 샌드위치',
+      }], [{
+        p: 'image',
+        u: 'https://s3.ap-northeast-2.amazonaws.com/www.gitple.io/bot/sandwitch/2.jpg',
+        t: '닭가슴살 & 고구마',
+      }, {
+        p: 'text',
+        t: '닭가슴살 & 고구마',
+      }],[{
+        p: 'image',
+        u: 'https://s3.ap-northeast-2.amazonaws.com/www.gitple.io/bot/sandwitch/3.jpg',
+        t: '선식',
+      },{
+        p: 'text',
+        t: '선식',
+      }]]
+    },
+    sourcelist: {
+      title: '소스를 선택해 주세요',
+      options: ['발사믹', '오리엔탈', '머스타드', '사우전', '요거트']
+    },
+    drinklist: {
+      title: '음료를 선택해 주세요',
+      options: ['두유', '옥수수수염차', '드링킹요거트', '자몽주스', '포도주스', '알로에', '매실', '우유', '트레비', '콜라', '아메리카노']
+    }
+  };
+  var _ = rs.utils._;
+  var options = rs.options.options;
+  var user = rs.currentUser();
+  var listName = args.shift();
+  let targetItem = LISTS[listName];
+
+  // console.log(listName, targetItem);
+
+  var mqttObjectMessage = {
+    t: targetItem.title,
+    a: []
+  };
+
+  _.forEach(targetItem.options, function(v) {
+    if (_.isString(v)) {
+      if (!mqttObjectMessage.s) {
+        mqttObjectMessage.s = {
+          n: 4,
+          p: 2,
+          a: []
+        };
+      }
+      mqttObjectMessage.s.a.push({
+        p: 'list',
+        t: v
+      });
+    } else { //slider
+      if (!mqttObjectMessage.s) {
+        mqttObjectMessage.s = {
+          n: _.size(v),
+          p: 2,
+          a: []
+        };
+      }
+      _.each(v, (sv) => { mqttObjectMessage.s.a.push(sv); });
+    }
+  });
+  return JSON.stringify(mqttObjectMessage);
+< object // showList
+
+> object getUserInfo javascript
+  var user = rs.currentUser();
+  var userInfo = rs.getUservar(user, '_user_info');
+  var prop = args.shift();
+
+  return userInfo[prop] || '고객';
+< object // getUserInfo
+
+> object sheetappend_async_ javascript
+//rs, args
+  var _ = rs.utils._;
+  var google = rs.utils.googleapis;
+  var sheets = google.sheets('v4');
+  var GoogleAuth = rs.utils.google_auth_library;
+
+  var options = rs.options.options;
+  var user = rs.currentUser();
+
+  var credentials = options.credentials;
+  var token = options.token;
+  var SPREAD_SHEET_ID = options.SPREAD_SHEET_ID;
+
+  var clientSecret = credentials.web.client_secret;
+  var clientId = credentials.web.client_id;
+  var redirectUrl = credentials.web.redirect_uris[0];
+  var auth = new GoogleAuth();
+  var oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+
+  oauth2Client.credentials = token;
+
+  var request = {
+    auth: oauth2Client,
+    spreadsheetId: SPREAD_SHEET_ID,
+  };
+  var now = new Date();
+  var kst = new Date(now.getTime() + 9*3600*1000)
+  var row = [
+    rs.getUservar(user, '_user_info').name || 'Unknown',
+    rs.getUservar(user, '_user_info').phone || 'Unknown',
+    rs.getUservar(user, 'menu') || 'Unknown',
+    rs.getUservar(user, 'source') || 'Unknown',
+    rs.getUservar(user, 'drink') || 'Unknown',
+    rs.getUservar(user, 'location') || 'Unknown',
+    rs.getUservar(user, 'message') || 'Unknown',
+    kst.getFullYear() + '-' + (kst.getMonth() + 1) + '-' + kst.getDate() + ' ' + kst.getHours() + ':' + kst.getMinutes() + ':' + kst.getSeconds(),
+    '주문접수'
+  ]
+
+  sheets.spreadsheets.get(request, (err, response) => {
+    if (err) {
+      // console.log('sheet get error:', err);
+      rs.setUservar(user, '_async_error', err.toString());
+      return cb.call(this, null, "");
+    }
+    let sheetTitle = response.sheets[0].properties.title;
+
+    // console.log('1st Sheet:', sheetTitle);
+
+    sheets.spreadsheets.values.append(
+      _.defaults({
+        range: sheetTitle + '!A2:E',
+        valueInputOption: 'USER_ENTERED',
+        resource: {
+          values: [row],
+        }
+      }, request),
+      (err, response) => {
+        if (err) {
+          // console.log('The API returned an error: ' + err);
+          rs.setUservar(user, '_async_error', err.toString());
+          return cb.call(this, null, "");
+        }
+        rs.setUservar(user, '_async_result', JSON.stringify(response));
+        return cb.call(this, null, "");
+      });
+  });
+< object sheetappend_async_ // javascript
+
++ 샌드위치
+- <set nextcmd=종류><set nexttopic=sandwitch_menu>
+  ^{topic=<get nexttopic>}{@<get nextcmd>}
+
+// Global triggers available everywhere
+> topic global
+    // indent 시작
+    + (나감|종료|끝)
+    - 주문을 종료합니다. <set _cmd={"quit":true}>
+
+    + (상담사|상담) [*]
+    - 상담사를 다시 연결합니다.<set _cmd={"transfer":{"type":"agent"}}>
+
+    + *
+    - 알 수 없는 선택입니다.\n
+      ^여기서 끝낼려면, [종료]\n 상담사를 연결하려면 [상담사 연결]
+      ^{@<get nextcmd>}
+< topic
+
+> topic sandwitch_menu inherits global
+    + 종류
+    - <call>showList menulist</call>
+
+    + 선식
+    - <set menu=선식><set source=없음>
+      ^<set nextcmd=음료수><set nexttopic=sandwitch_drink>
+      ^{topic=<get nexttopic>}{@<get nextcmd>}
+
+    + (@menulist)
+    - <set menu=<star1>>
+      ^<set nextcmd=소스><set nexttopic=sandwitch_source>
+      ^{topic=<get nexttopic>}{@<get nextcmd>}
+
+    + *
+    - {@종류}
+< topic
+
+> topic sandwitch_source inherits global
+    + 소스
+    - <call>showList sourcelist</call>
+
+    + (@sourcelist)
+    - <set source=<star1>>
+      ^<set nextcmd=음료수><set nexttopic=sandwitch_drink>
+      ^{topic=<get nexttopic>}{@<get nextcmd>}
+
+    + *
+    -{@소스}
+< topic
+
+> topic sandwitch_drink inherits global
+    + 음료수
+    - <call>showList drinklist</call>
+
+    + (@drinklist)
+    - <set drink=<star1>>
+      ^<set nextcmd=위치><set nexttopic=sandwitch_location>
+      ^{topic=<get nexttopic>}{@<get nextcmd>}
+
+    + *
+    - {@음료수}
+< topic
+
+> topic sandwitch_location inherits global
+    + 위치
+    - 배달받으실 곳을 알려주세요.\n직접 가져가실 분은 [방문 픽업]을 눌러주세요.
+
+    + *
+    - <set location=<star>>
+      ^<set nextcmd=메시지><set nexttopic=sandwitch_message>
+      ^{topic=<get nexttopic>}{@<get nextcmd>}
+< topic
+
+> topic sandwitch_message inherits global
+    + 메시지
+    - 추가하실 메시지를 입력해주세요. [없음]
+
+    + *
+    % 추가하실 메시지*
+    - <set message=<star>>
+      ^ {
+      ^    "t": "<call>getUserInfo name</call>님, 아래의 내용으로 주문을 하시겠습니까?",
+      ^    "a": [
+      ^     {
+      ^        "p": "form",
+      ^        "f": "input",
+      ^        "t": "메뉴",
+      ^        "k": "menu",
+      ^        "v": "<get menu>"
+      ^     },
+      ^     {
+      ^        "p": "form",
+      ^        "f": "input",
+      ^        "t": "소스",
+      ^        "k": "source",
+      ^        "v": "<get source>"
+      ^     },
+      ^     {
+      ^        "p": "form",
+      ^        "f": "input",
+      ^        "t": "음료수",
+      ^        "k": "drink",
+      ^        "v": "<get drink>"
+      ^     },
+      ^     {
+      ^        "p": "form",
+      ^        "f": "input",
+      ^        "t": "배달위치",
+      ^        "k": "location",
+      ^        "v": "<get location>"
+      ^     },
+      ^     {
+      ^        "p": "form",
+      ^        "f": "input",
+      ^        "t": "메시지",
+      ^        "k": "message",
+      ^        "v": "<get message>"
+      ^     },
+      ^     {
+      ^        "p": "button",
+      ^        "t": "주문합니다"
+      ^     },
+      ^     {
+      ^        "p": "button",
+      ^        "t": "처음으로"
+      ^     },
+      ^     {
+      ^        "p": "button",
+      ^        "t": "나가기"
+      ^     }
+      ^   ]
+      ^ }
+
+    + 주문합니다
+    - <call>sheetappend_async_</call>
+
+    //async result
+    + sheetappend_async_
+    * <get _async_error> != undefined =>주문 오류입니다: <get _async_error>{@나가기}
+    - 주문이 정상적으로 접수되었습니다.
+      ^<set nextcmd=종료><set nexttopic=global>
+      ^{topic=<get nexttopic>}{@<get nextcmd>}
+
+    + 처음으로
+    - <set nextcmd=종류><set nexttopic=sandwitch_menu>
+      ^{topic=<get nexttopic>}{@<get nextcmd>}
+
+    + 나가기
+    - 주문을 취소하고 나갑니다.<set _cmd={"quit":true}>
+
+    + *
+    - 알 수 없는 메뉴입니다.
+< topic

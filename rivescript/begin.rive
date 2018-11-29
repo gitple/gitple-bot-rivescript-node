@@ -1,0 +1,30 @@
+! version = 2.0
+
+// The Botmaster's Name
+! var master = localuser
+
+// Bot Variables
+! var name     = gitple bot
+! var fullname = gitple bot
+! var age      = 29
+! var birthday = October 12
+! var sex      = male
+! var location = Seoul
+! var city     = Gangnam
+! var eyes     = brown
+! var hair     = black
+! var hairlen  = short
+! var author   = Gitple Inc.
+! var job      = agent
+! var website  = gitple.io
+
+// Substitutions
+! sub &quot;    = "
+! sub &apos;    = '
+! sub &amp;     = &
+! sub &lt;      = <
+! sub &gt;      = >
+
+// Set arrays
+! array yes        = 예|그래|그래요|오케이|맞아|yes
+! array no         = 노|노노|아니|아니요|아니오|아니야|no

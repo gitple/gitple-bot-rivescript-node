@@ -1,0 +1,26 @@
+{
+  "id": "sandwich_ordering",
+  "name": "샌드위치 주문",
+  "msg": {
+    "start": "샌드위치 주문 봇을 시작합니다",
+    "end": "샌드위치 주문 봇을 종료합니다",
+    "trigger": "샌드위치",
+    "timeoutMessage": "응답이 없습니다. 상담사를 다시 연결합니다"
+  },
+  "noPos": true,
+  "debug": false,
+  "type": "external:rivescript",
+  "riveDir": "rivescript/",
+  "require": {
+    "_": "lodash",
+    "googleapis": "googleapis",
+    "google_auth_library": "google-auth-library"
+  },
+  "options": {
+    "SPREAD_SHEET_ID": "_your_sheet_id_"
+  },
+  "optionsHidden": {
+    "credentials":{},
+    "token": {}
+  }
+}

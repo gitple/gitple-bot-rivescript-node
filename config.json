@@ -1,0 +1,5 @@
+{
+  "BOT_ID": 9999,
+  "BOT_GATEWAY_SECRET": "_your_bot_secret",
+  "APP_CODE": "your_app_code"
+}

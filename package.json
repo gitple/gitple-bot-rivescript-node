@@ -1,0 +1,53 @@
+{
+  "name": "gitple-bot-rivescript",
+  "version": "0.0.1",
+  "scripts": {
+    "start": "node index.js",
+    "tsc": "tslint --type-check -p tsconfig.json && tsc",
+    "lint": "tslint --type-check -p tsconfig.json",
+    "watch": "tsc -w"
+  },
+  "keywords": [
+    "gitple",
+    "bot",
+    "chatbot",
+    "rivesript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gitple/gitple-bot-rivescript-node.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gitple/gitple-bot-rivescript-node/issues"
+  },
+  "homepage": "https://github.com/gitple/gitple-bot-rivescript-node",
+  "author": "Gitple <support@gitple.com> (https://gitple.io)",
+  "directories": {
+    "test": "test"
+  },
+  "devDependencies": {
+    "@types/chai": "^3.5.2",
+    "@types/mocha": "^2.2.41",
+    "@types/mqtt": "0.0.34",
+    "@types/lodash": "^4.14.54",
+    "chai": "^3.5.0",
+    "mocha": "^3.2.0",
+    "ts-mocha": "^1.0.3",
+    "tslint": "^5.1.0",
+    "typescript": "^2.3.3"
+  },
+  "dependencies": {
+    "gitple-bot": "0.0.1",
+    "google-auth-library": "0.*",
+    "googleapis": "24.*",
+    "json-fs-store": "^1.0.1",
+    "jsonrpc-lite": "^2.0.1",
+    "lodash": "4.17.10",
+    "mecab-ya": "git+https://github.com/gitple/node-mecab-ya.git",
+    "mqtt": "2.18.3",
+    "pos": "^0.4.2",
+    "rivescript": "git+https://gitple/rivescript-js.git",
+    "winston": "^2.3.0"
+  },
+  "license": "UNLICENSED"
+}
