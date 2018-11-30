@@ -28,6 +28,20 @@ BOT_RIVESCRIPT_DIR=./myrivescript \
 npm start
 ```
 
+## Simple example code
+
+By interfacing with [WooCommerce](https://woocommerce.com/), user can review his/her orders and cancel them.
+
+![Rivescript example](/docs/rivescript_example.jpg)
+
+
+## Full example code - Sandwich self-order
+
+- After user made an order, it is appened the google sheet shared between chatbot and Chef.
+- Chef can get an notification whenever there's update in the google sheet.
+
+see code [rivescript/ directory](/rivescript/)
+
 ## Note
 
 - `store/` directory has the files which have bot instance's state. They are saved for bot recoveries.
