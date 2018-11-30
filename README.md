@@ -42,7 +42,7 @@ You can set your rivesript path as as a environment variable:`BOT_RIVESCRIPT_DIR
 ```
 BOT_MANAGER_CONFIG_FILE=./myconfig.json \
 BOT_SETTING_FILE=./mybot_setting.json \
-BOT_RIVESCRIPT_DIR=./myrivescript \
+BOT_RIVESCRIPT_DIR=./rivescript/sandwich_order \
 npm start
 ```
 

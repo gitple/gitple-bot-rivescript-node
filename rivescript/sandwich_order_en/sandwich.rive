@@ -1,0 +1,315 @@
+! version = 2.00
+! local concat = none
+! array menulist = today sandwich|chicken & sweet potato|misu
+! array sourcelist = balsamic|oriental|mustard|thousand island|yogert
+! array drinklist = soy milk|corn silk tea|dirinking yoert|grapefruit juice|grape juice|aloe|plum|milk|trevi|coke|americano
+
+// showList listvar
+> object showList javascript
+//rs, args, cb
+  const LISTS = {
+    menulist: {
+      title: 'Please select a kind of sandwich',
+      options: [[{
+        p: 'image',
+        u: 'https://s3.ap-northeast-2.amazonaws.com/www.gitple.io/bot/sandwitch/1.jpg',
+        t: "Today Sandwich",
+      }, {
+        p: 'text',
+        t: "Today Sandwich",
+      }], [{
+        p: 'image',
+        u: 'https://s3.ap-northeast-2.amazonaws.com/www.gitple.io/bot/sandwitch/2.jpg',
+        t: 'Chicken & Sweet Potato',
+      }, {
+        p: 'text',
+        t: 'Chicken & Sweet Potato',
+      }],[{
+        p: 'image',
+        u: 'https://s3.ap-northeast-2.amazonaws.com/www.gitple.io/bot/sandwitch/3.jpg',
+        t: 'Misu',
+      },{
+        p: 'text',
+        t: 'Misu',
+      }]]
+    },
+    sourcelist: {
+      title: 'Please select a source',
+      options: ['Balsamic', 'Oriental', 'Mustard', 'Thousand Island', 'Yogert']
+    },
+    drinklist: {
+      title: 'Please choose a drink',
+      options: ['Soy Milk', 'Corn Silk Tea', 'Dirinking Yogert', 'Grapefruit Juice', 'Grape Juice', 'Aloe', 'Plum', 'Milk', 'Trevi', 'Coke', 'Americano']
+    }
+  };
+  var _ = rs.utils._;
+  var options = rs.options.options;
+  var user = rs.currentUser();
+  var listName = args.shift();
+  let targetItem = LISTS[listName];
+
+  // console.log(listName, targetItem);
+
+  var mqttObjectMessage = {
+    t: targetItem.title,
+    a: []
+  };
+
+  _.forEach(targetItem.options, function(v) {
+    if (_.isString(v)) {
+      if (!mqttObjectMessage.s) {
+        mqttObjectMessage.s = {
+          n: 4,
+          p: 2,
+          a: []
+        };
+      }
+      mqttObjectMessage.s.a.push({
+        p: 'list',
+        t: v
+      });
+    } else { //slider
+      if (!mqttObjectMessage.s) {
+        mqttObjectMessage.s = {
+          n: _.size(v),
+          p: 2,
+          a: []
+        };
+      }
+      _.each(v, (sv) => { mqttObjectMessage.s.a.push(sv); });
+    }
+  });
+  return JSON.stringify(mqttObjectMessage);
+< object // showList
+
+> object getUserInfo javascript
+  var user = rs.currentUser();
+  var userInfo = rs.getUservar(user, '_user_info');
+  var prop = args.shift();
+
+  return userInfo[prop] || 'Customer';
+< object // getUserInfo
+
+> object sheetappend_async_ javascript
+//rs, args
+  var _ = rs.utils._;
+  var google = rs.utils.googleapis;
+  var sheets = google.sheets('v4');
+  var GoogleAuth = rs.utils.google_auth_library;
+
+  var options = rs.options.options;
+  var user = rs.currentUser();
+
+  var credentials = options.credentials;
+  var token = options.token;
+  var SPREAD_SHEET_ID = options.SPREAD_SHEET_ID;
+
+  var clientSecret = credentials.web.client_secret;
+  var clientId = credentials.web.client_id;
+  var redirectUrl = credentials.web.redirect_uris[0];
+  var auth = new GoogleAuth();
+  var oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+
+  oauth2Client.credentials = token;
+
+  var request = {
+    auth: oauth2Client,
+    spreadsheetId: SPREAD_SHEET_ID,
+  };
+  var now = new Date();
+  var kst = new Date(now.getTime() + 9*3600*1000)
+  var row = [
+    rs.getUservar(user, '_user_info').name || 'Unknown',
+    rs.getUservar(user, '_user_info').phone || 'Unknown',
+    rs.getUservar(user, 'menu') || 'Unknown',
+    rs.getUservar(user, 'source') || 'Unknown',
+    rs.getUservar(user, 'drink') || 'Unknown',
+    rs.getUservar(user, 'location') || 'Unknown',
+    rs.getUservar(user, 'message') || 'Unknown',
+    kst.getFullYear() + '-' + (kst.getMonth() + 1) + '-' + kst.getDate() + ' ' + kst.getHours() + ':' + kst.getMinutes() + ':' + kst.getSeconds(),
+    '주문접수'
+  ]
+
+  sheets.spreadsheets.get(request, (err, response) => {
+    if (err) {
+      // console.log('sheet get error:', err);
+      rs.setUservar(user, '_async_error', err.toString());
+      return cb.call(this, null, "");
+    }
+    let sheetTitle = response.sheets[0].properties.title;
+
+    // console.log('1st Sheet:', sheetTitle);
+
+    sheets.spreadsheets.values.append(
+      _.defaults({
+        range: sheetTitle + '!A2:E',
+        valueInputOption: 'USER_ENTERED',
+        resource: {
+          values: [row],
+        }
+      }, request),
+      (err, response) => {
+        if (err) {
+          // console.log('The API returned an error: ' + err);
+          rs.setUservar(user, '_async_error', err.toString());
+          return cb.call(this, null, "");
+        }
+        rs.setUservar(user, '_async_result', JSON.stringify(response));
+        return cb.call(this, null, "");
+      });
+  });
+< object sheetappend_async_ // javascript
+
++ sandwich
+- <set nextcmd=kind><set nexttopic=sandwich_menu>
+  ^{topic=<get nexttopic>}{@<get nextcmd>}
+
+// Global triggers available everywhere
+> topic global
+    // indent 시작
+    + (end|bye)
+    - Terminate the order. <set _cmd={"quit":true}>
+
+    + [*] (agent) [*]
+    - Connecting the agent.<set _cmd={"transfer":{"type":"agent"}}>
+
+    + *
+    - Unknown choice.\n
+      ^To finish here,, [end]\n To connect an agent, [connect agent]
+      ^{@<get nextcmd>}
+< topic
+
+> topic sandwich_menu inherits global
+    + kind
+    - <call>showList menulist</call>
+
+    + misu
+    - <set menu=Misu><set source=none>
+      ^<set nextcmd=drink><set nexttopic=sandwich_drink>
+      ^{topic=<get nexttopic>}{@<get nextcmd>}
+
+    + (@menulist)
+    - <set menu=<star1>>
+      ^<set nextcmd=source><set nexttopic=sandwich_source>
+      ^{topic=<get nexttopic>}{@<get nextcmd>}
+
+    + *
+    - {@kind}
+< topic
+
+> topic sandwich_source inherits global
+    + source
+    - <call>showList sourcelist</call>
+
+    + (@sourcelist)
+    - <set source=<star1>>
+      ^<set nextcmd=drink><set nexttopic=sandwich_drink>
+      ^{topic=<get nexttopic>}{@<get nextcmd>}
+
+    + *
+    -{@source}
+< topic
+
+> topic sandwich_drink inherits global
+    + drink
+    - <call>showList drinklist</call>
+
+    + (@drinklist)
+    - <set drink=<star1>>
+      ^<set nextcmd=location><set nexttopic=sandwich_location>
+      ^{topic=<get nexttopic>}{@<get nextcmd>}
+
+    + *
+    - {@drink}
+< topic
+
+> topic sandwich_location inherits global
+    + location
+    - Please tell me where you can get it.\nIf you want to bring it directly, please press [Pick up]
+
+    + *
+    - <set location=<star>>
+      ^<set nextcmd=message><set nexttopic=sandwich_message>
+      ^{topic=<get nexttopic>}{@<get nextcmd>}
+< topic
+
+> topic sandwich_message inherits global
+    + message
+    - Please enter a message to leave.[None]
+
+    + *
+    % please enter a message*
+    - <set message=<star>>
+      ^ {
+      ^    "t": "<call>getUserInfo name</call>, Would you like to order as follows?",
+      ^    "a": [
+      ^     {
+      ^        "p": "form",
+      ^        "f": "input",
+      ^        "t": "menu",
+      ^        "k": "menu",
+      ^        "v": "<get menu>"
+      ^     },
+      ^     {
+      ^        "p": "form",
+      ^        "f": "input",
+      ^        "t": "source",
+      ^        "k": "source",
+      ^        "v": "<get source>"
+      ^     },
+      ^     {
+      ^        "p": "form",
+      ^        "f": "input",
+      ^        "t": "drink",
+      ^        "k": "drink",
+      ^        "v": "<get drink>"
+      ^     },
+      ^     {
+      ^        "p": "form",
+      ^        "f": "input",
+      ^        "t": "location",
+      ^        "k": "location",
+      ^        "v": "<get location>"
+      ^     },
+      ^     {
+      ^        "p": "form",
+      ^        "f": "input",
+      ^        "t": "message",
+      ^        "k": "message",
+      ^        "v": "<get message>"
+      ^     },
+      ^     {
+      ^        "p": "button",
+      ^        "t": "Order"
+      ^     },
+      ^     {
+      ^        "p": "button",
+      ^        "t": "Back to first"
+      ^     },
+      ^     {
+      ^        "p": "button",
+      ^        "t": "Leave"
+      ^     }
+      ^   ]
+      ^ }
+
+    + order
+    - <call>sheetappend_async_</call>
+
+    //async result
+    + sheetappend_async_
+    * <get _async_error> != undefined =>Order error: <get _async_error>{@leave}
+    - Your order has been successfully received.
+      ^<set nextcmd=end><set nexttopic=global>
+      ^{topic=<get nexttopic>}{@<get nextcmd>}
+
+    + back to first
+    - <set nextcmd=kind><set nexttopic=sandwich_menu>
+      ^{topic=<get nexttopic>}{@<get nextcmd>}
+
+    + leave
+    - Cancel your order and leave.<set _cmd={"quit":true}>
+
+    + *
+    - Unknown menu.
+< topic
