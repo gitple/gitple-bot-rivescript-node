@@ -15,6 +15,10 @@ By interfacing with [WooCommerce](https://woocommerce.com/), user can review his
 
 see code [rivescript/ directory](/rivescript/)
 
+Live demo at [gitple.io](https://gitple.io) : Launch Chat -> Custom Bot -> Sandwich Deliver Order
+
+![Sandwich self-order](/docs/sandwich_order.jpg)
+
 ## prerequisite
 
 see https://github.com/gitple/gitple-bot-node/README.md
