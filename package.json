@@ -46,7 +46,7 @@
     "mecab-ya": "git+https://github.com/gitple/node-mecab-ya.git",
     "mqtt": "2.18.3",
     "pos": "^0.4.2",
-    "rivescript": "git+https://gitple/rivescript-js.git",
+    "rivescript": "git+https://github.com/gitple/rivescript-js.git",
     "winston": "^2.3.0"
   },
   "license": "UNLICENSED"
