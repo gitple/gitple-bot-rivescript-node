@@ -37,11 +37,11 @@
     "typescript": "^2.3.3"
   },
   "dependencies": {
-    "gitple-bot": "0.0.1",
+    "gitple-bot": "0.0.4",
     "google-auth-library": "0.*",
     "googleapis": "24.*",
-    "json-fs-store": "^1.0.1",
-    "jsonrpc-lite": "^2.0.1",
+    "json-fs-store": "~1.0.1",
+    "jsonrpc-lite": "~2.0.1",
     "lodash": "4.17.10",
     "mecab-ya": "git+https://github.com/gitple/node-mecab-ya.git",
     "mqtt": "2.18.3",
