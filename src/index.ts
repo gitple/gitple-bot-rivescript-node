@@ -3,19 +3,25 @@
  */
 
 'use strict';
-import RiveScript = require('rivescript');
 import {BotManager} from 'gitple-bot';
 import {RiveScriptBot} from './riveScriptBot';
 import _ = require('lodash');
-let botMgrConfig = require(process.env.BOT_MANAGER_CONFIG_FILE || './config.json');
+import * as func from './func';
+let botMgrConfig = require(process.env.BOT_MANAGER_CONFIG_FILE || '../config.json');
 let store = require('json-fs-store')();
-
-RiveScriptBot.initialize();
+const botName = process.env.BOT_NAME;
 
 let botMgr = new BotManager(botMgrConfig);
 
+RiveScriptBot.initialize(botMgr);
+
+// Add rivescript custom function
+if (botName === 'hello') {
+  func.funcInitialize(RiveScriptBot);
+}
+
 // on bot start
-botMgr.on('start', (botConfig, done) => {
+botMgr.on('start', (botConfig: any, done) => {
   let myBot = new RiveScriptBot(botMgr, botConfig);
 
   console.log(`[RiveScriptBot] start bot ${myBot.id}. user identifier:`, _.get(botConfig, 'user.identifier'));
@@ -24,7 +30,7 @@ botMgr.on('start', (botConfig, done) => {
 });
 
 // on bot end
-botMgr.on('end', (botId, done) => {
+botMgr.on('end', (botId: string, done) => {
   let bot = botMgr.getBot(botId);
   console.log(`[RiveScriptBot] end bot ${bot && bot.id}. user identifier:`, _.get(bot, 'config.user.identifier'));
 
@@ -36,7 +42,7 @@ botMgr.on('end', (botId, done) => {
   return done && done();
 });
 
-botMgr.on('error', (err) => {
+botMgr.on('error', (err: Error) => {
   console.error('[RiveScriptBot] error', err);
 });
 
@@ -57,10 +63,10 @@ botMgr.on('ready', () => {
 });
 
 // on bot recovery from stored info
-botMgr.on('recovery', (botRecovery) => {
+botMgr.on('recovery', (botRecovery: any) => {
 
   let botConfig =  botRecovery.config;
-  let botState =  botRecovery.config;
+  let botState =  botRecovery.state;
   let myBot = new RiveScriptBot(botMgr, botConfig, botState);
 
   if (!myBot) { return; }

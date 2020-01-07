@@ -13,7 +13,7 @@ By interfacing with [WooCommerce](https://woocommerce.com/), user can review his
 - After user made an order, it is appened the google sheet shared between chatbot and Chef.
 - Chef can get an notification whenever there's update in the google sheet.
 
-see code [rivescript/ directory](/rivescript/)
+see code [rivescript/ directory](/rivescript/sandwich/)
 
 Live demo at [gitple.io](https://gitple.io) : Launch Chat -> Custom Bot -> Sandwich Deliver Order
 
@@ -42,8 +42,8 @@ You can set your rivesript path as as a environment variable:`BOT_RIVESCRIPT_DIR
 ```
 BOT_MANAGER_CONFIG_FILE=./myconfig.json \
 BOT_SETTING_FILE=./mybot_setting.json \
-BOT_RIVESCRIPT_DIR=./rivescript/sandwich_order \
-npm start
+BOT_RIVESCRIPT_DIR=./rivescript/sandwich/sandwich_order \
+npm run start
 ```
 
 ## Note

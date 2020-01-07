@@ -21,11 +21,11 @@ export declare class RiveScriptBot extends Bot {
     rsId: string;
     rsName: string;
     _timeout: any;
-    static initialize(cb?: (err: Error) => void): void;
+    static initialize(botMgr: BotManager, cb?: (err: Error) => void): void;
     constructor(botManager: BotManager, botConfig: BotConfig, state?: any);
     startChat(cb?: (err: Error) => void): void;
     handleMqttMessage(message: string, cb?: (err: Error) => void): void;
-    sendMqttMessage(message: string, opts?: any, cb?: any): any;
+    sendMqttMessage(message: string, opts?: any, cb?: any): Promise<any>;
     sendMqttCommand(cmd: string | Object, cb?: (err: Error) => void): void;
     finalize(): void;
     endChat(params: any, cb?: (err?: Error) => void): void;

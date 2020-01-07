@@ -2,8 +2,10 @@
   "name": "gitple-bot-rivescript",
   "version": "0.0.1",
   "scripts": {
-    "start": "node index.js",
-    "tsc": "tslint --type-check -p tsconfig.json && tsc",
+    "hello": "BOT_NAME=hello node dist/index.js",
+    "sandwich": "BOT_NAME=sandwich node dist/index.js",
+    "start": "BOT_NAME=sandwich node dist/index.js",
+    "build": "tslint --type-check -p tsconfig.json && tsc",
     "lint": "tslint --type-check -p tsconfig.json",
     "watch": "tsc -w"
   },
@@ -27,9 +29,9 @@
   },
   "devDependencies": {
     "@types/chai": "^3.5.2",
+    "@types/lodash": "^4.14.54",
     "@types/mocha": "^2.2.41",
     "@types/mqtt": "0.0.34",
-    "@types/lodash": "^4.14.54",
     "chai": "^3.5.0",
     "mocha": "^3.2.0",
     "ts-mocha": "^1.0.3",
@@ -46,7 +48,7 @@
     "mecab-ya": "git+https://github.com/gitple/node-mecab-ya.git",
     "mqtt": "2.18.3",
     "pos": "^0.4.2",
-    "rivescript": "git+https://github.com/gitple/rivescript-js.git",
+    "rivescript": "^2.0.0",
     "winston": "^2.3.0"
   },
   "license": "UNLICENSED"

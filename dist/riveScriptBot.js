@@ -1,4 +1,12 @@
 'use strict';
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
 const async = require("async");
@@ -7,15 +15,17 @@ const nlp = require("./nlp");
 const gitple_bot_1 = require("gitple-bot");
 /* tslint:disable:variable-name */
 const RiveScript = require("rivescript");
+const botName = process.env.BOT_NAME;
 if (!process.env.MECAB_LIB_PATH) {
     process.env.MECAB_LIB_PATH = '/usr/local';
 }
-var mecab = require('mecab-ya');
+const ONE_MIN_IN_MS = 60 * 1000; // user timeout check
+const BOT_TIMEOUT = 4 * 60 * 1000; // user timeout
 const BOT_REPLY_TIMEOUT = 10 * 1000; // bot timeout leads transfering to agent
 const MESSAGE_DELAY = 500; // intentional message delay
 class RiveScriptBot extends gitple_bot_1.Bot {
-    static initialize(cb) {
-        let rsBotSetting = require(process.env.BOT_SETTING_FILE || './bot_setting.json');
+    static initialize(botMgr, cb) {
+        let rsBotSetting = require(process.env.BOT_SETTING_FILE || '../bot_setting.json')[botName];
         rsBotSetting.options = _.defaults(rsBotSetting.optionsHidden, rsBotSetting.options);
         RiveScriptBot._rs = new RiveScript({
             utf8: true,
@@ -28,6 +38,15 @@ class RiveScriptBot extends gitple_bot_1.Bot {
             RiveScriptBot._rs.utils[name] = require(mod);
         });
         RiveScriptBot._rs.options = rsBotSetting;
+        setInterval(() => {
+            let now = _.now();
+            _.each(botMgr.botInstances, (bot) => {
+                if (now - bot.mtime > BOT_TIMEOUT) {
+                    logger.error('botEnd due to bot timeout', 'bot', bot.id);
+                    bot.sendCommand('botEnd');
+                }
+            });
+        }, ONE_MIN_IN_MS);
         async.series([
             (done) => {
                 RiveScriptBot._rs.loadDirectory(process.env.BOT_RIVESCRIPT_DIR || RiveScriptBot._rs.options.riveDir || './rivescript', () => {
@@ -45,11 +64,13 @@ class RiveScriptBot extends gitple_bot_1.Bot {
     }
     constructor(botManager, botConfig, state) {
         super(botManager, botConfig, state);
-        if (state) {
-            RiveScriptBot._rs.setUservars(state);
-        }
         this.on('message', this.handleMqttMessage);
-        this.startChat();
+        if (state) {
+            RiveScriptBot._rs.setUservars(this.id, state);
+        }
+        else {
+            this.startChat();
+        }
     }
     startChat(cb) {
         var self = this;
@@ -95,15 +116,15 @@ class RiveScriptBot extends gitple_bot_1.Bot {
             return self.sendCommand('transferToAgent');
         }, BOT_REPLY_TIMEOUT);
         self.sendKeyInEvent();
-        self.getRiveScriptReply(message, (err, reply) => {
+        self.getRiveScriptReply(message, (err, reply) => __awaiter(this, void 0, void 0, function* () {
             if (self._timeout) {
                 clearTimeout(self._timeout);
                 self._timeout = null;
             }
-            else {
+            else { // ignore on timeout
                 return;
             }
-            let cmd = RiveScriptBot._rs.getUservar(self.id, '_cmd');
+            let cmd = yield RiveScriptBot._rs.getUservar(self.id, '_cmd');
             if (err) {
                 logger.error('handleMqttMessage() getRiveScriptReply failure', err);
             }
@@ -121,9 +142,9 @@ class RiveScriptBot extends gitple_bot_1.Bot {
                 }
             }
             // set state before save
-            self.state = RiveScriptBot._rs.getUservars(self.id);
+            self.state = yield RiveScriptBot._rs.getUservars(self.id);
             self.saveState();
-            if (cmd && cmd !== 'null' && cmd !== 'undefined') {
+            if (cmd && cmd !== 'null' && cmd !== 'undefined') { // undefined string
                 RiveScriptBot._rs.setUservar(self.id, '_cmd', null); //reset cmd
                 try {
                     cmd = JSON.parse(cmd);
@@ -134,28 +155,30 @@ class RiveScriptBot extends gitple_bot_1.Bot {
                 return self.sendMqttCommand(cmd, cb);
             }
             return cb && cb(err);
-        });
+        }));
     }
     sendMqttMessage(message, opts, cb) {
-        let self = this;
-        let context = RiveScriptBot._rs.getUservar(self.id, '_context');
-        if (_.isNil(message)) {
-            logger.info('mqtt publish: ignore nil message', self.id, JSON.stringify(message));
-        }
-        message = _.trim(message);
-        if (message === '') {
-            return cb && cb(new Error('message is empty string; id=' + self.id));
-        }
-        try {
-            message = JSON.parse(message);
-        }
-        catch (e) {
-            // do nothing
-        }
-        if (MESSAGE_DELAY > 0) {
-            _.delay(() => { self.sendMessage(message, cb); }, MESSAGE_DELAY);
-        }
-        logger.debug('mqtt publish', self.id, JSON.stringify(message));
+        return __awaiter(this, void 0, void 0, function* () {
+            let self = this;
+            let context = yield RiveScriptBot._rs.getUservar(self.id, '_context');
+            if (_.isNil(message)) {
+                logger.info('mqtt publish: ignore nil message', self.id, JSON.stringify(message));
+            }
+            message = _.trim(message);
+            if (message === '') {
+                return cb && cb(new Error('message is empty string; id=' + self.id));
+            }
+            try {
+                message = JSON.parse(message);
+            }
+            catch (e) {
+                // do nothing
+            }
+            if (MESSAGE_DELAY > 0) {
+                _.delay(() => { self.sendMessage(message, cb); }, MESSAGE_DELAY);
+            }
+            logger.debug('mqtt publish', self.id, JSON.stringify(message));
+        });
     }
     sendMqttCommand(cmd, cb) {
         let self = this;
@@ -177,10 +200,11 @@ class RiveScriptBot extends gitple_bot_1.Bot {
         return cb && cb(null);
     }
     finalize() {
+        let self = this;
         super.finalize();
         logger.debug('finalize');
         //delete room and mqtt unsubscribe
-        RiveScriptBot._rs.clearUservars();
+        RiveScriptBot._rs.clearUservars(self.id);
         return;
     }
     endChat(params, cb) {
@@ -194,19 +218,19 @@ class RiveScriptBot extends gitple_bot_1.Bot {
     getRiveScriptReply(msg, cb) {
         var self = this;
         let lang = 'ko'; //get user's lang
-        if (RiveScriptBot._rs.options.noPos) {
-            return RiveScriptBot._rs.replyAsync(self.id, msg, self).then((reply) => {
+        if (RiveScriptBot._rs.options.noPos) { // unless pos tagging
+            return RiveScriptBot._rs.reply(self.id, msg, self).then((reply) => __awaiter(this, void 0, void 0, function* () {
                 logger.debug('initialMatch', RiveScriptBot._rs.initialMatch(self.id));
                 logger.debug('lastMatch', RiveScriptBot._rs.lastMatch(self.id));
-                logger.debug('input', RiveScriptBot._rs.getUservar(self.id, 'input')[0]);
+                logger.debug('input', yield RiveScriptBot._rs.getUservar(self.id, 'input')[0]);
                 //send to mqtt
-                //logger.debug('user vars', RiveScriptBot._rs.getUservars(self.id));
+                //logger.debug('user vars', await RiveScriptBot._rs.getUservars(self.id));
                 return cb && cb.call(this, null, reply);
-            }).catch((err) => {
+            })).catch((err) => {
                 return cb && cb.call(this, err);
             });
         }
-        nlp.orgform(msg, lang, (err, tags) => {
+        nlp.orgform(msg, lang, (err, tags) => __awaiter(this, void 0, void 0, function* () {
             let words = [];
             _.each(tags, (t) => {
                 words.push(t[0]);
@@ -216,19 +240,19 @@ class RiveScriptBot extends gitple_bot_1.Bot {
             RiveScriptBot._rs.setUservar(self.id, '_pos', _.flatten(tags).toString());
             RiveScriptBot._rs.setUservar(self.id, '_org', msg);
             logger.debug('normalized input msg:', normMsg);
-            logger.debug('_pos', RiveScriptBot._rs.getUservar(self.id, '_pos'));
+            logger.debug('_pos', yield RiveScriptBot._rs.getUservar(self.id, '_pos'));
             logger.debug('_org', msg);
-            return RiveScriptBot._rs.replyAsync(self.id, normMsg, self).then((reply) => {
+            return RiveScriptBot._rs.reply(self.id, normMsg, self).then((reply) => __awaiter(this, void 0, void 0, function* () {
                 logger.debug('initialMatch', RiveScriptBot._rs.initialMatch(self.id));
                 logger.debug('lastMatch', RiveScriptBot._rs.lastMatch(self.id));
-                logger.debug('input', RiveScriptBot._rs.getUservar(self.id, 'input')[0]);
+                logger.debug('input', yield RiveScriptBot._rs.getUservar(self.id, 'input')[0]);
                 //send to mqtt
-                //logger.debug('user vars', RiveScriptBot._rs.getUservars(self.id));
+                //logger.debug('user vars', await RiveScriptBot._rs.getUservars(self.id));
                 return cb && cb.call(this, null, reply);
-            }).catch((err) => {
+            })).catch((err) => {
                 return cb && cb.call(this, err);
             });
-        });
+        }));
     }
 }
 exports.RiveScriptBot = RiveScriptBot;

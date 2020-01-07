@@ -6,10 +6,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const gitple_bot_1 = require("gitple-bot");
 const riveScriptBot_1 = require("./riveScriptBot");
 const _ = require("lodash");
-let botMgrConfig = require(process.env.BOT_MANAGER_CONFIG_FILE || './config.json');
+const func = require("./func");
+let botMgrConfig = require(process.env.BOT_MANAGER_CONFIG_FILE || '../config.json');
 let store = require('json-fs-store')();
-riveScriptBot_1.RiveScriptBot.initialize();
+const botName = process.env.BOT_NAME;
 let botMgr = new gitple_bot_1.BotManager(botMgrConfig);
+riveScriptBot_1.RiveScriptBot.initialize(botMgr);
+// Add rivescript custom function
+if (botName === 'hello') {
+    func.funcInitialize(riveScriptBot_1.RiveScriptBot);
+}
 // on bot start
 botMgr.on('start', (botConfig, done) => {
     let myBot = new riveScriptBot_1.RiveScriptBot(botMgr, botConfig);
@@ -44,7 +50,7 @@ botMgr.on('ready', () => {
 // on bot recovery from stored info
 botMgr.on('recovery', (botRecovery) => {
     let botConfig = botRecovery.config;
-    let botState = botRecovery.config;
+    let botState = botRecovery.state;
     let myBot = new riveScriptBot_1.RiveScriptBot(botMgr, botConfig, botState);
     if (!myBot) {
         return;
@@ -52,7 +58,7 @@ botMgr.on('recovery', (botRecovery) => {
     console.log(`[botMgr] recovery bot ${myBot.id}. ${botRecovery.savedTime} user identifier:`, _.get(botConfig, 'user.identifier'));
     const BOT_TTL = 5 * 60 * 1000; // 5min
     let savedTime = botRecovery.savedTime;
-    if (Date.now() - savedTime > BOT_TTL) {
+    if (Date.now() - savedTime > BOT_TTL) { // End bot if it has been more than BOT_TTL
         myBot.sendCommand('botEnd'); // request to end my bot
         _.delay(() => {
             if (botMgr.getBot(myBot.id)) {
@@ -72,7 +78,7 @@ botMgr.on('recovery', (botRecovery) => {
 botMgr.on('timeout', (botId) => {
     let bot = botMgr.getBot(botId);
     console.info('[RiveScriptBot] bot timeout, finalize it in 2secs', botId);
-    if (bot) {
+    if (bot) { // send botEnd command and finalize in 2 secs.
         bot.sendCommand('botEnd');
         _.delay(() => { bot.finalize(); }, 2000);
     }

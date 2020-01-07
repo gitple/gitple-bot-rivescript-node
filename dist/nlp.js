@@ -22,13 +22,13 @@ function orgformGet(req, res, next) {
             _.each(tags, (t) => {
                 let w = t[0];
                 let tag = t[1];
-                if (/[A-Z]/.test(tag) === true && tag !== 'SYM') {
+                if (/[A-Z]/.test(tag) === true && tag !== 'SYM') { //ignore symbol
                     words.push(w);
                 }
             });
             return res.status(200).send({ a: words.join(' '), tags: tags });
         }
-        else {
+        else { // default ko
             if (err) {
                 return res.status(400).send({ error: err.toString() });
             }
@@ -47,7 +47,7 @@ function orgform(q, lang, cb) {
         let tags = taggerEn.tag(_words);
         return cb && cb(null, tags); //FIXME: remove funtuation pos
     }
-    else {
+    else { // default ko
         mecab.orgform(q, cb);
     }
 }
