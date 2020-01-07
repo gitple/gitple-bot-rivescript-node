@@ -1,6 +1,6 @@
 {
   "name": "gitple-bot-rivescript",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "scripts": {
     "hello": "BOT_NAME=hello node dist/index.js",
     "sandwich": "BOT_NAME=sandwich node dist/index.js",

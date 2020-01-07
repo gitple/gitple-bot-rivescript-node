@@ -11,19 +11,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const logger = require("winston");
 // tslint:disable-next-line:variable-name
 function funcInitialize(RiveScriptBot) {
-    // 봇 시작 안내 문구
+    // bot start message
     RiveScriptBot._rs.setSubroutine('startMsg', function (rs, args) {
         return new rs.Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             const self = this;
             try {
-                const msg = '환영합니다.';
+                const msg = 'Welcome. Gitple.';
                 self.sendMessage(msg, () => {
                     resolve(true);
                 });
             }
             catch (error) {
                 logger.error('Error startMsg: ', error);
-                let msg = '서비스에 문제가 발생하였습니다.\n종료합니다.';
+                let msg = 'I\'m sorry. Please say that again.';
                 self.sendMessage(msg, () => {
                     self.sendCommand('botEnd');
                 });

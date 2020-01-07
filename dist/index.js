@@ -12,7 +12,7 @@ let store = require('json-fs-store')();
 const botName = process.env.BOT_NAME;
 let botMgr = new gitple_bot_1.BotManager(botMgrConfig);
 riveScriptBot_1.RiveScriptBot.initialize(botMgr);
-// Add rivescript custom function
+// Add rivescript custom function, $ npm run hello
 if (botName === 'hello') {
     func.funcInitialize(riveScriptBot_1.RiveScriptBot);
 }
