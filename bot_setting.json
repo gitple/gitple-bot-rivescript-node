@@ -25,19 +25,19 @@
       "token": {}
     }
   },
-  "hello": {
-    "id": "hello",
-    "name": "인사말",
+  "guide": {
+    "id": "guide",
+    "name": "깃플 가이드",
     "msg": {
-      "start": "인사말 봇을 시작합니다.",
-      "end": "인사말 봇을 종료합니다",
-      "trigger": "안녕",
+      "start": "가이드 봇을 시작합니다.",
+      "end": "가이드 봇을 종료합니다",
+      "trigger": "깃플",
       "timeoutMessage": "응답이 없습니다. 상담사를 다시 연결합니다"
     },
     "noPos": true,
     "debug": false,
     "type": "external:rivescript",
-    "riveDir": "rivescript/hello/",
+    "riveDir": "rivescript/guide/",
     "require": {
       "_": "lodash"
     },

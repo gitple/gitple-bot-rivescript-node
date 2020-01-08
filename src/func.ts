@@ -8,11 +8,9 @@ export function funcInitialize(RiveScriptBot: any) {
     return new rs.Promise(async (resolve: any, reject: any) => {
       const self = this;
       try {
-        const msg = 'Welcome. Gitple.';
+        const msg = 'Welcome. Gitple.\n';
 
-        self.sendMessage(msg, () => {
-          resolve(true);
-        });
+        resolve(msg);
       } catch (error) {
         logger.error('Error startMsg: ', error);
         let msg = 'I\'m sorry. Please say that again.';

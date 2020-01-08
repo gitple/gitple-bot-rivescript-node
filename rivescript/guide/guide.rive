@@ -1,0 +1,79 @@
+! version = 1.00
+
++ *
+- <call>startMsg </call>
+^ {topic=start}{@시작}
+
+> topic start
++ 시작
+- 하이브리드 채팅상담 <a href="https://gitple.io/" style="text-decoration:none; color:green; font-weight:bold">깃플</a>입니다.\n{topic=top_menu_list}{@메뉴}
+< topic
+
+> topic top_menu_list
++ 메뉴
+- 1. 사용자 가이드\n
+^ 2. 채팅앱 연동\n
+^ 3. 알림 설정\n
+^ 4. 외부 연동\n
+^ 5. 문제 해결
+
++ (1|1번)
+- 사용자 가이드\n{topic=nothing}
+^ 1. <a href="https://guide.gitple.io/#/tour" style="text-decoration:none; color:green; font-weight:bold">제품 투어</a>\n
+^ 2. <a href="https://guide.gitple.io/#/howto" style="text-decoration:none; color:green; font-weight:bold">워크스페이스 메뉴</a>\n
+
++ (2|2번)
+- 채팅앱 연동\n{topic=nothing}
+^ 1. <a href="https://guide.gitple.io/#/web-sdk-list" style="text-decoration:none; color:green; font-weight:bold">웹(Web)</a>\n
+^ 2. <a href="https://guide.gitple.io/#/android-sdk-list" style="text-decoration:none; color:green; font-weight:bold">안드로이드(Android)</a>\n
+^ 3. <a href="https://guide.gitple.io/#/ios-sdk-list" style="text-decoration:none; color:green; font-weight:bold">애플(iOS)</a>\n
+^ 4. <a href="https://guide.gitple.io/#/hybrid-sdk-list" style="text-decoration:none; color:green; font-weight:bold">하이브리드(Hydrid)</a>\n
+^ 5. <a href="https://guide.gitple.io/#/sdk-list" style="text-decoration:none; color:green; font-weight:bold">전체</a>\n
+
++ (3|3번)
+- 알림 설정\n{topic=nothing}
+^ 1. <a href="https://guide.gitple.io/#/alerts" style="text-decoration:none; color:green; font-weight:bold">기본 알림</a>\n
+^ 2. <a href="https://guide.gitple.io/#/externalalerts" style="text-decoration:none; color:green; font-weight:bold">추가 알림</a>\n
+
++ (4|4번)
+- 외부 연동\n{topic=nothing}
+^ 1. <a href="https://guide.gitple.io/#/bot-sdk" style="text-decoration:none; color:green; font-weight:bold">챗봇(Bot) SDK</a>\n
+^ 2. <a href="https://guide.gitple.io/#/open-api" style="text-decoration:none; color:green; font-weight:bold">오픈(REST) API</a>\n
+^ 2. <a href="https://guide.gitple.io/#/event-api" style="text-decoration:none; color:green; font-weight:bold">이벤트(Outgoing) API</a>\n
+
++ (5|5번){topic=nothing}
+- <a href="https://guide.gitple.io/#/troubleshooting" style="text-decoration:none; color:green; font-weight:bold">문제 해결</a>\n
+
++ 처음
+- {topic=first}{@처음}
+
++ 이전
+- {topic=start}{@시작}
+
++ 종료
+- {topic=end}{@나가기}
+< topic
+
+> topic nothing
++ *
+- 처음|이전|종료
+
++ 처음
+- {topic=first}{@처음}
+
++ 이전
+- {topic=start}{@시작}
+
++ 종료
+- {topic=end}{@나가기}
+< topic
+
+> topic first
++ 처음
+- {topic=start}{@시작}
+< topic
+
+> topic end
++ 나가기
+- 채팅 상담을 종료하겠습니다.\n이용해주셔서 감사합니다.<set _cmd={"quit":true}>
+< topic

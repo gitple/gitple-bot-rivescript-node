@@ -2,7 +2,7 @@
   "name": "gitple-bot-rivescript",
   "version": "0.0.2",
   "scripts": {
-    "hello": "BOT_NAME=hello node dist/index.js",
+    "guide": "BOT_NAME=guide node dist/index.js",
     "sandwich": "BOT_NAME=sandwich node dist/index.js",
     "start": "BOT_NAME=sandwich node dist/index.js",
     "build": "tslint --type-check -p tsconfig.json && tsc",

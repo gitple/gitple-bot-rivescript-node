@@ -15,8 +15,8 @@ let botMgr = new BotManager(botMgrConfig);
 
 RiveScriptBot.initialize(botMgr);
 
-// Add rivescript custom function, $ npm run hello
-if (botName === 'hello') {
+// Add rivescript custom function, $ npm run guide
+if (botName === 'guide') {
   func.funcInitialize(RiveScriptBot);
 }
 

@@ -49,12 +49,14 @@ class RiveScriptBot extends gitple_bot_1.Bot {
         }, ONE_MIN_IN_MS);
         async.series([
             (done) => {
-                RiveScriptBot._rs.loadDirectory(process.env.BOT_RIVESCRIPT_DIR || RiveScriptBot._rs.options.riveDir || './rivescript', () => {
+                RiveScriptBot._rs.loadDirectory(process.env.BOT_RIVESCRIPT_DIR || RiveScriptBot._rs.options.riveDir || './rivescript')
+                    .then(function () {
                     RiveScriptBot._rs.sortReplies();
                     return done();
-                }, (err, loadCount) => {
+                })
+                    .catch(function (err, loadCount) {
                     logger.error('Ignoring: Loading fails', RiveScriptBot._rs.options.riveDir, err, loadCount);
-                    return done(); // ignore error
+                    return done();
                 });
             },
             (done) => {

@@ -73,13 +73,14 @@ export class RiveScriptBot extends Bot {
 
     async.series([
       (done?: (err?: Error) => void) => { // load rive scripts
-        RiveScriptBot._rs.loadDirectory(process.env.BOT_RIVESCRIPT_DIR || RiveScriptBot._rs.options.riveDir || './rivescript',
-        () => { // on success
+        RiveScriptBot._rs.loadDirectory(process.env.BOT_RIVESCRIPT_DIR || RiveScriptBot._rs.options.riveDir || './rivescript')
+        .then(function() {
           RiveScriptBot._rs.sortReplies();
           return done();
-        }, (err: Error, loadCount: any) => { // on error
+        })
+        .catch(function(err: Error, loadCount: any) {
           logger.error('Ignoring: Loading fails', RiveScriptBot._rs.options.riveDir, err, loadCount);
-          return done(); // ignore error
+          return done();
         });
       },
       (done?: (err: Error) => void) => { // recover existing ones

@@ -16,10 +16,8 @@ function funcInitialize(RiveScriptBot) {
         return new rs.Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             const self = this;
             try {
-                const msg = 'Welcome. Gitple.';
-                self.sendMessage(msg, () => {
-                    resolve(true);
-                });
+                const msg = 'Welcome. Gitple.\n';
+                resolve(msg);
             }
             catch (error) {
                 logger.error('Error startMsg: ', error);
