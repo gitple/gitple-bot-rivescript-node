@@ -21,7 +21,7 @@ Live demo at [gitple.io](https://gitple.io) : Launch Chat -> Custom Bot -> Sandw
 
 ## prerequisite
 
-see https://github.com/gitple/gitple-bot-node/README.md
+see https://github.com/gitple/gitple-bot-node/blob/master/README.md
 
 ## How to Use
 
