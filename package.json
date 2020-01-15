@@ -39,7 +39,7 @@
     "typescript": "^2.3.3"
   },
   "dependencies": {
-    "gitple-bot": "0.0.4",
+    "gitple-bot": "0.0.5",
     "google-auth-library": "0.*",
     "googleapis": "24.*",
     "json-fs-store": "~1.0.1",
