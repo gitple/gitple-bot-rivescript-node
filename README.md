@@ -3,9 +3,7 @@ Gitple bot in rivescript
 
 ## Simple example code
 
-By interfacing with [WooCommerce](https://woocommerce.com/), user can review his/her orders and cancel them.
-
-![Rivescript example](/docs/rivescript_example.jpg)
+![Rivescript example](/docs/rivescript_example.png)
 
 
 ## Full example code - Sandwich self-order
