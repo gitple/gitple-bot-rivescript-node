@@ -84,18 +84,17 @@
 
 > object getUserInfo javascript
   var user = rs.currentUser();
-  var userInfo = rs.getUservar(user, '_user_info');
+  var userInfo = await rs.getUservar(user, '_user_info');
   var prop = args.shift();
 
   return userInfo[prop] || '고객';
 < object // getUserInfo
 
-> object sheetappend_async_ javascript
+> object sheetappend javascript
 //rs, args
   var _ = rs.utils._;
   var google = rs.utils.googleapis;
   var sheets = google.sheets('v4');
-  var GoogleAuth = rs.utils.google_auth_library;
 
   var options = rs.options.options;
   var user = rs.currentUser();
@@ -107,8 +106,7 @@
   var clientSecret = credentials.web.client_secret;
   var clientId = credentials.web.client_id;
   var redirectUrl = credentials.web.redirect_uris[0];
-  var auth = new GoogleAuth();
-  var oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
+  var oauth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUrl);
 
   oauth2Client.credentials = token;
 
@@ -119,46 +117,37 @@
   var now = new Date();
   var kst = new Date(now.getTime() + 9*3600*1000)
   var row = [
-    rs.getUservar(user, '_user_info').name || 'Unknown',
-    rs.getUservar(user, '_user_info').phone || 'Unknown',
-    rs.getUservar(user, 'menu') || 'Unknown',
-    rs.getUservar(user, 'source') || 'Unknown',
-    rs.getUservar(user, 'drink') || 'Unknown',
-    rs.getUservar(user, 'location') || 'Unknown',
-    rs.getUservar(user, 'message') || 'Unknown',
+    await rs.getUservar(user, '_user_info').name || 'Unknown',
+    await rs.getUservar(user, '_user_info').phone || 'Unknown',
+    await rs.getUservar(user, 'menu') || 'Unknown',
+    await rs.getUservar(user, 'source') || 'Unknown',
+    await rs.getUservar(user, 'drink') || 'Unknown',
+    await rs.getUservar(user, 'location') || 'Unknown',
+    await rs.getUservar(user, 'message') || 'Unknown',
     kst.getFullYear() + '-' + (kst.getMonth() + 1) + '-' + kst.getDate() + ' ' + kst.getHours() + ':' + kst.getMinutes() + ':' + kst.getSeconds(),
     '주문접수'
   ]
 
-  sheets.spreadsheets.get(request, (err, response) => {
-    if (err) {
-      // console.log('sheet get error:', err);
-      rs.setUservar(user, '_async_error', err.toString());
-      return cb.call(this, null, "");
-    }
-    let sheetTitle = response.sheets[0].properties.title;
-
-    // console.log('1st Sheet:', sheetTitle);
-
-    sheets.spreadsheets.values.append(
-      _.defaults({
-        range: sheetTitle + '!A2:E',
-        valueInputOption: 'USER_ENTERED',
-        resource: {
-          values: [row],
-        }
-      }, request),
-      (err, response) => {
-        if (err) {
-          // console.log('The API returned an error: ' + err);
-          rs.setUservar(user, '_async_error', err.toString());
-          return cb.call(this, null, "");
-        }
-        rs.setUservar(user, '_async_result', JSON.stringify(response));
-        return cb.call(this, null, "");
-      });
+  return new Promise((resolve, reject) => {
+      sheets.spreadsheets.values.append(
+        _.defaults({
+          range: '!A2:E',
+          valueInputOption: 'USER_ENTERED',
+          resource: {
+            values: [row],
+          }
+        }, request),
+        (err, response) => {
+          if (err) {
+            console.log('The API returned an error: ' + err);
+            rs.setUservar(user, '_async_error', err.toString());
+            reject(err);
+          }
+          rs.setUservar(user, '_async_result', JSON.stringify(response));
+          resolve(true);
+        });
   });
-< object sheetappend_async_ // javascript
+< object sheetappend // javascript
 
 + 샌드위치
 - <set nextcmd=종류><set nexttopic=sandwitch_menu>
@@ -294,11 +283,7 @@
       ^ }
 
     + 주문합니다
-    - <call>sheetappend_async_</call>
-
-    //async result
-    + sheetappend_async_
-    * <get _async_error> != undefined =>주문 오류입니다: <get _async_error>{@나가기}
+    * <call>sheetappend</call> != true => 주문 오류입니다.{@나가기}
     - 주문이 정상적으로 접수되었습니다.
       ^<set nextcmd=종료><set nexttopic=global>
       ^{topic=<get nexttopic>}{@<get nextcmd>}
