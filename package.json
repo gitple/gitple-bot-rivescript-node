@@ -45,7 +45,6 @@
     "json-fs-store": "~1.0.1",
     "jsonrpc-lite": "~2.0.1",
     "lodash": "4.17.10",
-    "mecab-ya": "git+https://github.com/gitple/node-mecab-ya.git",
     "mqtt": "2.18.3",
     "pos": "^0.4.2",
     "rivescript": "^2.0.0",

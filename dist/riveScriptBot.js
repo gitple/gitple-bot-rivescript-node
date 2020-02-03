@@ -11,7 +11,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
 const async = require("async");
 const logger = require("winston");
-const nlp = require("./nlp");
 const gitple_bot_1 = require("gitple-bot");
 /* tslint:disable:variable-name */
 const RiveScript = require("rivescript");
@@ -219,42 +218,16 @@ class RiveScriptBot extends gitple_bot_1.Bot {
     }
     getRiveScriptReply(msg, cb) {
         var self = this;
-        let lang = 'ko'; //get user's lang
-        if (RiveScriptBot._rs.options.noPos) { // unless pos tagging
-            return RiveScriptBot._rs.reply(self.id, msg, self).then((reply) => __awaiter(this, void 0, void 0, function* () {
-                logger.debug('initialMatch', RiveScriptBot._rs.initialMatch(self.id));
-                logger.debug('lastMatch', RiveScriptBot._rs.lastMatch(self.id));
-                logger.debug('input', yield RiveScriptBot._rs.getUservar(self.id, 'input')[0]);
-                //send to mqtt
-                //logger.debug('user vars', await RiveScriptBot._rs.getUservars(self.id));
-                return cb && cb.call(this, null, reply);
-            })).catch((err) => {
-                return cb && cb.call(this, err);
-            });
-        }
-        nlp.orgform(msg, lang, (err, tags) => __awaiter(this, void 0, void 0, function* () {
-            let words = [];
-            _.each(tags, (t) => {
-                words.push(t[0]);
-            });
-            let normMsg = words.join(' ');
-            //set variable: with pos
-            RiveScriptBot._rs.setUservar(self.id, '_pos', _.flatten(tags).toString());
-            RiveScriptBot._rs.setUservar(self.id, '_org', msg);
-            logger.debug('normalized input msg:', normMsg);
-            logger.debug('_pos', yield RiveScriptBot._rs.getUservar(self.id, '_pos'));
-            logger.debug('_org', msg);
-            return RiveScriptBot._rs.reply(self.id, normMsg, self).then((reply) => __awaiter(this, void 0, void 0, function* () {
-                logger.debug('initialMatch', RiveScriptBot._rs.initialMatch(self.id));
-                logger.debug('lastMatch', RiveScriptBot._rs.lastMatch(self.id));
-                logger.debug('input', yield RiveScriptBot._rs.getUservar(self.id, 'input')[0]);
-                //send to mqtt
-                //logger.debug('user vars', await RiveScriptBot._rs.getUservars(self.id));
-                return cb && cb.call(this, null, reply);
-            })).catch((err) => {
-                return cb && cb.call(this, err);
-            });
-        }));
+        return RiveScriptBot._rs.reply(self.id, msg, self).then((reply) => __awaiter(this, void 0, void 0, function* () {
+            logger.debug('initialMatch', RiveScriptBot._rs.initialMatch(self.id));
+            logger.debug('lastMatch', RiveScriptBot._rs.lastMatch(self.id));
+            logger.debug('input', yield RiveScriptBot._rs.getUservar(self.id, 'input')[0]);
+            //send to mqtt
+            //logger.debug('user vars', await RiveScriptBot._rs.getUservars(self.id));
+            return cb && cb.call(this, null, reply);
+        })).catch((err) => {
+            return cb && cb.call(this, err);
+        });
     }
 }
 exports.RiveScriptBot = RiveScriptBot;
