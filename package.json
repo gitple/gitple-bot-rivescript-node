@@ -5,8 +5,8 @@
     "guide": "BOT_NAME=guide node dist/index.js",
     "sandwich": "BOT_NAME=sandwich node dist/index.js",
     "start": "BOT_NAME=sandwich node dist/index.js",
-    "build": "tslint --type-check -p tsconfig.json && tsc",
-    "lint": "tslint --type-check -p tsconfig.json",
+    "build": "tslint -p tsconfig.json && tsc",
+    "lint": "tslint -p tsconfig.json",
     "watch": "tsc -w"
   },
   "keywords": [
@@ -39,13 +39,11 @@
     "typescript": "^2.3.3"
   },
   "dependencies": {
-    "gitple-bot": "0.0.5",
+    "gitple-bot": "~0.0.6",
+    "async": "2.6.1",
     "google-auth-library": "0.*",
     "googleapis": "24.*",
-    "json-fs-store": "~1.0.1",
-    "jsonrpc-lite": "~2.0.1",
     "lodash": "4.17.10",
-    "mqtt": "2.18.3",
     "pos": "^0.4.2",
     "rivescript": "^2.0.0",
     "winston": "^2.3.0"

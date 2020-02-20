@@ -6,6 +6,7 @@
 import {BotManager} from 'gitple-bot';
 import {RiveScriptBot} from './riveScriptBot';
 import _ = require('lodash');
+import async = require('async');
 import * as func from './func';
 let botMgrConfig = require(process.env.BOT_MANAGER_CONFIG_FILE || '../config.json');
 let store = require('json-fs-store')();
@@ -101,4 +102,41 @@ botMgr.on('timeout', (botId: string) => {
     bot.sendCommand('botEnd');
     _.delay(() => { bot.finalize(); }, 2000);
   }
+});
+
+function saveAllBot(cb: Function) {
+  let allBots = botMgr.getAllBots();
+
+  async.eachSeries(allBots, (myBot, done) => {
+    myBot.saveState(done);
+  },
+  (err) => {
+    return cb && cb(err);
+  });
+}
+
+function finalize(cb: Function) {
+  saveAllBot(() => {
+    try {
+      botMgr.finalize(cb);
+    } catch (e) {
+      return cb && cb();
+    }
+  });
+}
+
+process.on('SIGINT', function() {
+  console.info('SIGINT');
+
+  try {
+    finalize(() => {
+      process.exit();
+    });
+  } catch (e) {
+    process.exit();
+  }
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[uncaughtException]', err);
 });

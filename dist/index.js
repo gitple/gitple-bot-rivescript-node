@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const gitple_bot_1 = require("gitple-bot");
 const riveScriptBot_1 = require("./riveScriptBot");
 const _ = require("lodash");
+const async = require("async");
 const func = require("./func");
 let botMgrConfig = require(process.env.BOT_MANAGER_CONFIG_FILE || '../config.json');
 let store = require('json-fs-store')();
@@ -82,4 +83,36 @@ botMgr.on('timeout', (botId) => {
         bot.sendCommand('botEnd');
         _.delay(() => { bot.finalize(); }, 2000);
     }
+});
+function saveAllBot(cb) {
+    let allBots = botMgr.getAllBots();
+    async.eachSeries(allBots, (myBot, done) => {
+        myBot.saveState(done);
+    }, (err) => {
+        return cb && cb(err);
+    });
+}
+function finalize(cb) {
+    saveAllBot(() => {
+        try {
+            botMgr.finalize(cb);
+        }
+        catch (e) {
+            return cb && cb();
+        }
+    });
+}
+process.on('SIGINT', function () {
+    console.info('SIGINT');
+    try {
+        finalize(() => {
+            process.exit();
+        });
+    }
+    catch (e) {
+        process.exit();
+    }
+});
+process.on('uncaughtException', (err) => {
+    console.error('[uncaughtException]', err);
 });
