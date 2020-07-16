@@ -43,7 +43,7 @@
     "async": "2.6.1",
     "google-auth-library": "0.*",
     "googleapis": "24.*",
-    "lodash": "4.17.10",
+    "lodash": "4.17.19",
     "pos": "^0.4.2",
     "rivescript": "^2.0.0",
     "winston": "^2.3.0"
