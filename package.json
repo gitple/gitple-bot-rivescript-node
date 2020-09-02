@@ -42,7 +42,7 @@
     "gitple-bot": "~0.0.6",
     "async": "2.6.1",
     "google-auth-library": "0.*",
-    "googleapis": "24.*",
+    "googleapis": "59.*",
     "lodash": "4.17.10",
     "pos": "^0.4.2",
     "rivescript": "^2.0.0",
